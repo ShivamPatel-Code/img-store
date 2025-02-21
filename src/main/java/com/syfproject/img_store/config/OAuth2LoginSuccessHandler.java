@@ -2,8 +2,7 @@ package com.syfproject.img_store.config;
 
 import com.syfproject.img_store.entity.User;
 import com.syfproject.img_store.repository.UserRepository;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -13,6 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
 
+@Slf4j
 @Component
 public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
@@ -22,7 +22,6 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         this.userRepository = userRepository;
     }
 
-
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
         OAuth2User oauthUser = (OAuth2User) authentication.getPrincipal();
@@ -31,16 +30,13 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         String githubId = attributes.get("id").toString();
         String username = attributes.get("login").toString();
         String email = attributes.get("email") != null ? attributes.get("email").toString() : username + "@github.com";
+        String location = attributes.get("location") != null ? attributes.get("location").toString() : "";
 
-        LoggerFactory.getLogger(OAuth2LoginSuccessHandler.class).info("\n\n\ngithub {}username {}email {}\n\n\n", githubId, username, email);
+        log.info("GitHub ID: {}, Username: {}, Email: {}, Location:{}", githubId, username, email, location);
 
-
-        userRepository.findByGithubId(githubId).orElseGet(() -> {
-            User newUser = new User(githubId, username, email);
-            return userRepository.save(newUser);
-        });
+        userRepository.findByGithubId(githubId)
+                .orElseGet(() -> userRepository.save(new User(githubId, username, email, location)));
 
         response.sendRedirect("/register");
     }
 }
-

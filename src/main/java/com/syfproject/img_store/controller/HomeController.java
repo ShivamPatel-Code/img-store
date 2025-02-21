@@ -11,4 +11,8 @@ public class HomeController {
         return "Welcome to Img Store";
     }
 
+    @GetMapping("/register")
+    public String register() {
+        return "Register for Img Store";
+    }
 }

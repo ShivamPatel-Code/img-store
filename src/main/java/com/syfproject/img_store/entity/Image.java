@@ -1,6 +1,5 @@
 package com.syfproject.img_store.entity;
 
-import com.syfproject.img_store.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -10,6 +9,7 @@ import lombok.*;
 @Getter
 @ToString
 @Entity
+@Table(name = "images")
 public class Image {
 
     @Id
@@ -19,8 +19,7 @@ public class Image {
     private String imgurId;
     private String link;
 
-    @ManyToOne
-    @JoinColumn(name = "user")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
     private User user;
-
 }
