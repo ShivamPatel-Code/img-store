@@ -1,12 +1,12 @@
-package com.syfproject.img_store.entity;
+package com.syfproject.img_store.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@Setter
 @Getter
+@Setter
 @ToString
 @Entity
 @Table(name = "images")
@@ -14,7 +14,7 @@ public class Image {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     private String imgurId;
     private String link;
@@ -24,3 +24,4 @@ public class Image {
     @JoinColumn(name = "user_id")
     private User user;
 }
+
