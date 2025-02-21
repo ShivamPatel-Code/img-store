@@ -18,6 +18,7 @@ public class Image {
 
     private String imgurId;
     private String link;
+    private String deleteHash;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
