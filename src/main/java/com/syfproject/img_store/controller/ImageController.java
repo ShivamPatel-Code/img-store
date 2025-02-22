@@ -13,11 +13,11 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/images")
-public class ImgurController {
+public class ImageController {
 
     private final ImgurClientService imgurClientService;
 
-    public ImgurController(ImgurClientService imgurClientService) {
+    public ImageController(ImgurClientService imgurClientService) {
         this.imgurClientService = imgurClientService;
     }
 

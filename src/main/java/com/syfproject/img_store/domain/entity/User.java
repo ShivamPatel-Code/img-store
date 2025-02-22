@@ -1,10 +1,10 @@
 package com.syfproject.img_store.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.syfproject.img_store.domain.entity.Image;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
-import net.minidev.json.annotate.JsonIgnore;
 
 import java.util.ArrayList;
 import java.util.List;
