@@ -21,14 +21,7 @@ public class ImgurClientService {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    // Get image details from Imgur
-    public ResponseEntity<Map> getImage(String imageId) {
-        String url = "https://api.imgur.com/3/image/" + imageId;
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Client-ID " + clientId);
-        HttpEntity<Void> entity = new HttpEntity<>(headers);
-        return restTemplate.exchange(url, HttpMethod.GET, entity, Map.class);
-    }
+
 
     // Delete an image from Imgur using the delete hash
     public ResponseEntity<Map> deleteImage(String deleteHash) {

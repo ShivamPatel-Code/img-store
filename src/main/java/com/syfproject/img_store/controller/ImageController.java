@@ -1,11 +1,9 @@
 package com.syfproject.img_store.controller;
 
-import com.syfproject.img_store.service.ImgurClientService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import com.syfproject.img_store.service.ImageService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,29 +13,32 @@ import java.util.Map;
 @RequestMapping("/api/images")
 public class ImageController {
 
-    private final ImgurClientService imgurClientService;
+    private final ImageService imageService;
 
-    public ImageController(ImgurClientService imgurClientService) {
-        this.imgurClientService = imgurClientService;
+    @Autowired
+    public ImageController(ImageService imageService) {
+        this.imageService = imageService;
     }
 
-    // Endpoint to get image details
-    @GetMapping("/{imageId}")
-    public ResponseEntity<Map> getImage(@PathVariable String imageId) {
-        ResponseEntity<Map> response = imgurClientService.getImage(imageId);
-        return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
-    }
-
-    // Endpoint to delete an image
-    @DeleteMapping("/{deleteHash}")
-    public ResponseEntity<Map> deleteImage(@PathVariable String deleteHash) {
-        ResponseEntity<Map> response = imgurClientService.deleteImage(deleteHash);
-        return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
-    }
-
+    // Upload endpoint – associates image with the authenticated user.
     @PostMapping("/upload")
-    public ResponseEntity<Map> uploadImage(@RequestParam("file") MultipartFile file) {
-        return imgurClientService.uploadImage(file);
+    public ResponseEntity<Map> uploadImage(@RequestParam("file") MultipartFile file, Authentication authentication) {
+        String username = authentication.getName();
+        return imageService.uploadImage(file, username);
+    }
+
+    // Endpoint to get all images of the authenticated user.
+    @GetMapping
+    public ResponseEntity<Map> getUserImages(Authentication authentication) {
+        String username = authentication.getName();
+        return imageService.getUserImages(username);
+
+    }
+
+    // Delete endpoint – expects a deleteHash. Checks if that image is associated with the user.
+    @DeleteMapping("/{deleteHash}")
+    public ResponseEntity<Map> deleteImage(@PathVariable String deleteHash, Authentication authentication) {
+        String username = authentication.getName();
+        return imageService.deleteImage(deleteHash, username);
     }
 }
-
