@@ -32,6 +32,5 @@ build/
 ### VS Code ###
 .vscode/
 
-src/main/resources/application.properties
 .DS_Store
 
