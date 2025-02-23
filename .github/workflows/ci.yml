@@ -17,7 +17,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Set up the JDK
+      # Step 2: Set up JDK
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
@@ -25,10 +25,22 @@ jobs:
           java-version: '17'
           cache: maven
 
-      # Step 3: Build the application using Maven
+      # Step 3: Set environment variables from GitHub Secrets
+      - name: Set environment variables
+        run: |
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> $GITHUB_ENV
+          echo "IMGUR_CLIENT_ID=${{ secrets.IMGUR_CLIENT_ID }}" >> $GITHUB_ENV
+          echo "IMGUR_CLIENT_SECRET=${{ secrets.IMGUR_CLIENT_SECRET }}" >> $GITHUB_ENV
+          echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> $GITHUB_ENV
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
+          echo "DB_URL=${{ secrets.DB_URL }}" >> $GITHUB_ENV
+          echo "KAFKA_ENABLED=false" >> $GITHUB_ENV  # Disable Kafka in CI
+
+      # Step 4: Build the application using Maven
       - name: Build with Maven
         run: mvn clean install --batch-mode
 
-      # Step 4: Run tests
+      # Step 5: Run tests
       - name: Run tests
         run: mvn test --batch-mode
+
