@@ -25,7 +25,7 @@ public class ImageService {
     private final UserRepository userRepository;
     private final KafkaTemplate<String, String> kafkaTemplate;
 
-    @Value("${KAFKA_ENABLED:false}")
+    @Value("${kafka.enabled:false}")
     private boolean kafkaEnabled;
 
     @Autowired
