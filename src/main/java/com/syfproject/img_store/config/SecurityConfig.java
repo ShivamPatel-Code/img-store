@@ -1,3 +1,6 @@
+/**
+ * Configuration class for Spring Security.
+ */
 package com.syfproject.img_store.config;
 
 import com.syfproject.img_store.service.CustomUserDetailsService;
@@ -34,6 +37,13 @@ public class SecurityConfig {
         this.customUserDetailsService = customUserDetailsService;
     }
 
+    /**
+     * Configures the security filter chain.
+     *
+     * @param http the HttpSecurity object to configure.
+     * @return the configured SecurityFilterChain.
+     * @throws Exception if an error occurs.
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -43,28 +53,46 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
-//                .anonymous();
-
         return http.build();
     }
 
+    /**
+     * Excludes the H2 console from Spring Security.
+     *
+     * @return a WebSecurityCustomizer.
+     */
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return web -> web.ignoring().requestMatchers("/h2-console/**");
     }
 
+    /**
+     * Provides a BCryptPasswordEncoder.
+     *
+     * @return a PasswordEncoder.
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // Expose AuthenticationManager for use in AuthController
+    /**
+     * Exposes the AuthenticationManager.
+     *
+     * @param configuration the AuthenticationConfiguration.
+     * @return the AuthenticationManager.
+     * @throws Exception if an error occurs.
+     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
 
-    // Define a JwtDecoder using the secret configured in application.properties
+    /**
+     * Configures the JwtDecoder using the provided secret.
+     *
+     * @return a JwtDecoder.
+     */
     @Bean
     public JwtDecoder jwtDecoder() {
         return NimbusJwtDecoder.withSecretKey(new SecretKeySpec(jwtSecret.getBytes(), "HMACSHA256")).build();

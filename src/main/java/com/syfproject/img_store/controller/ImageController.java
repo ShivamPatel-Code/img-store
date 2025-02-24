@@ -1,3 +1,6 @@
+/**
+ * Controller for handling image operations: upload, retrieval, and deletion.
+ */
 package com.syfproject.img_store.controller;
 
 import com.syfproject.img_store.service.ImageService;
@@ -20,22 +23,38 @@ public class ImageController {
         this.imageService = imageService;
     }
 
-    // Upload endpoint – associates image with the authenticated user.
+    /**
+     * Uploads an image and associates it with the authenticated user.
+     *
+     * @param file the image file
+     * @param authentication the authentication object containing the user
+     * @return ResponseEntity with the upload result
+     */
     @PostMapping("/upload")
     public ResponseEntity<Map> uploadImage(@RequestParam("file") MultipartFile file, Authentication authentication) {
         String username = authentication.getName();
         return imageService.uploadImage(file, username);
     }
 
-    // Endpoint to get all images of the authenticated user.
+    /**
+     * Retrieves all images associated with the authenticated user.
+     *
+     * @param authentication the authentication object containing the user
+     * @return ResponseEntity with user images
+     */
     @GetMapping("/all")
     public ResponseEntity<Map> getUserImages(Authentication authentication) {
         String username = authentication.getName();
         return imageService.getUserImages(username);
-
     }
 
-    // Delete endpoint – expects a deleteHash. Checks if that image is associated with the user.
+    /**
+     * Deletes an image identified by delete hash if associated with the authenticated user.
+     *
+     * @param deleteHash the delete hash for the image
+     * @param authentication the authentication object containing the user
+     * @return ResponseEntity with deletion result
+     */
     @DeleteMapping("/delete/{deleteHash}")
     public ResponseEntity<Map> deleteImage(@PathVariable String deleteHash, Authentication authentication) {
         String username = authentication.getName();
