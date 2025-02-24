@@ -32,8 +32,8 @@ jobs:
           echo "JWT_SECRET=${{ secrets.JWT_SECRET }}"
           echo "IMGUR_CLIENT_ID=${{ secrets.IMGUR_CLIENT_ID }}"
           echo "IMGUR_CLIENT_SECRET=${{ secrets.IMGUR_CLIENT_SECRET }}"
-          echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >>
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >>
+          echo "DB_USERNAME=${{ secrets.DB_USERNAME }}"
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}"
 
       # Step 4: Build the application using Maven
       - name: Build with Maven
