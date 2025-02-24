@@ -10,6 +10,7 @@ Additionally, the application optionally integrates with Kafka for asynchronous 
 - [Technologies Used](#technologies-used)
 - [Configuration](#configuration)
 - [Running the Application](#running-the-application)
+- [Testing](#testing)
 
 ## Features
 
@@ -85,3 +86,22 @@ jwt.expiration=3600000
 
 # Logging Configuration
 logging.level.org.springframework.security=TRACE
+```
+
+## Running the Application
+1. Build the Project:
+`mvn clean install`
+
+2. Run the Application:
+`mvn spring-boot:run`
+
+3. Access the H2 Console:
+`Navigate to http://localhost:8081/h2-console.`
+
+
+## Testing
+Run the tests using:
+`mvn clean test`
+
+The test suite covers user registration, authentication, and image operations including upload validations, retrieval, and deletion.
+
