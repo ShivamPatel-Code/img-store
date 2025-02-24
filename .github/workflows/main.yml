@@ -8,6 +8,7 @@ jobs:
 
     steps:
       - name: Get a variable
-        run: echo "Here is my secret var {{ secrets.DB_NAME }}"
+        run: echo "Here is my secret var ${{ secrets.DB_NAME }}"
         env:
-          JWT_SECRET: "{{ secrets.JWT_SECRET }}"
+          echo JWT_SECRET: "${{ secrets.JWT_SECRET }}"
+          echo DB_USERNAME: "${{ secrets.DB_USERNAME }}"
