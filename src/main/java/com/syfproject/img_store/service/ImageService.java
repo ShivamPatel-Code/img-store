@@ -16,10 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-/**
- * Service for handling image operations, including uploading images to Imgur,
- * retrieving user images, and deleting images.
- */
 @Slf4j
 @Service
 public class ImageService {
@@ -29,17 +25,9 @@ public class ImageService {
     private final UserRepository userRepository;
     private final KafkaTemplate<String, String> kafkaTemplate;
 
-    @Value("${kafka.enabled:false}")
+    @Value("${KAFKA_ENABLED:false}")
     private boolean kafkaEnabled;
 
-    /**
-     * Constructs the ImageService.
-     *
-     * @param imgurClientService the service to interact with Imgur API
-     * @param imageRepository the repository for Image entities
-     * @param userRepository the repository for User entities
-     * @param kafkaTemplate the Kafka template for publishing events (optional)
-     */
     @Autowired
     public ImageService(ImgurClientService imgurClientService,
                         ImageRepository imageRepository,
@@ -54,9 +42,9 @@ public class ImageService {
     /**
      * Uploads an image to Imgur, associates it with the user, and publishes a Kafka event if enabled.
      *
-     * @param file the image file to upload
+     * @param file the image file
      * @param username the username of the uploader
-     * @return ResponseEntity with the result of the upload
+     * @return ResponseEntity with upload result
      */
     public ResponseEntity<Map> uploadImage(MultipartFile file, String username) {
         log.info("Uploading image for user: {}", username);
@@ -83,9 +71,10 @@ public class ImageService {
         image.setImgurId(imgurId);
         image.setLink(imageLink);
         image.setDeleteHash(deleteHash);
+        image.setFilename(file.getOriginalFilename());  // Set the original file name.
         image.setUser(user);
         imageRepository.save(image);
-        log.debug("Image saved for user {} with Imgur ID: {}", username, imgurId);
+        log.debug("Image saved for user {} with id {}", username, image.getId());
 
         if (kafkaEnabled && kafkaTemplate != null) {
             String eventMessage = String.format("{\"username\":\"%s\", \"imageLink\":\"%s\"}", username, imageLink);
@@ -98,9 +87,9 @@ public class ImageService {
     }
 
     /**
-     * Retrieves images associated with the authenticated user.
+     * Retrieves images associated with the given user.
      *
-     * @param username the username of the user
+     * @param username the username
      * @return ResponseEntity with the user's images
      */
     public ResponseEntity<Map> getUserImages(String username) {
@@ -114,8 +103,7 @@ public class ImageService {
         List<Image> images = imageRepository.findByUser(user);
         if (images.isEmpty()) {
             log.info("No images found for user: {}", username);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("message", "No image is associated with your account"));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "No image is associated with your account"));
         } else {
             log.info("Found {} images for user: {}", images.size(), username);
             return ResponseEntity.ok(Map.of("user", user.getUsername(), "images", images));
@@ -123,19 +111,49 @@ public class ImageService {
     }
 
     /**
-     * Deletes an image identified by the given delete hash if it is associated with the user.
+     * Retrieves a specific image by its ID if it is associated with the given user.
      *
-     * @param deleteHash the delete hash of the image
-     * @param username the username of the user
-     * @return ResponseEntity with the deletion result
+     * @param id the image ID
+     * @param username the username
+     * @return ResponseEntity with the image details or error message
+     */
+    public ResponseEntity<Map> getImageById(Long id, String username) {
+        log.info("Retrieving image with id {} for user {}", id, username);
+        Optional<User> userOptional = userRepository.findByUsername(username);
+        if (userOptional.isEmpty()) {
+            log.error("User not found: {}", username);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "User not found"));
+        }
+        User user = userOptional.get();
+        Optional<Image> imageOptional = imageRepository.findByIdAndUser(id, user);
+        if (imageOptional.isEmpty()) {
+            log.error("Image with id {} not found for user {}", id, username);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Image not found"));
+        }
+        Image image = imageOptional.get();
+        log.debug("Image found: {}", image);
+        return ResponseEntity.ok(Map.of(
+                "id", image.getId(),
+                "imgurId", image.getImgurId(),
+                "link", image.getLink(),
+                "filename", image.getFilename(),
+                "deleteHash", image.getDeleteHash()
+        ));
+    }
+
+    /**
+     * Deletes an image by its delete hash if associated with the given user.
+     *
+     * @param deleteHash the delete hash
+     * @param username the username
+     * @return ResponseEntity with deletion result
      */
     public ResponseEntity<Map> deleteImage(String deleteHash, String username) {
         log.info("Deleting image with deleteHash {} for user {}", deleteHash, username);
         Optional<User> userOptional = userRepository.findByUsername(username);
         if (userOptional.isEmpty()) {
             log.error("User not found: {}", username);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "User not found"));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "User not found"));
         }
         User user = userOptional.get();
         Optional<Image> imageOptional = imageRepository.findByDeleteHashAndUser(deleteHash, user);

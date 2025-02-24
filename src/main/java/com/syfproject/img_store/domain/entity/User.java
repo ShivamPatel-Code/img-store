@@ -33,6 +33,12 @@ public class User {
     @Pattern(regexp = "^(?=.*[A-Z])(?=.*\\d).*$", message = "Password must contain at least one uppercase letter and one number")
     private String password;
 
+    @NotEmpty(message = "First name is required")
+    private String firstname;
+
+    @NotEmpty(message = "Last name is required")
+    private String lastname;
+
     @NotEmpty(message = "Email cannot be empty")
     @Email(message = "Invalid email address")
     private String email;
@@ -41,13 +47,13 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Image> images = new ArrayList<>();
 
-    public void addImage(Image image) {
-        images.add(image);
-        image.setUser(this);
-    }
-
-    public void removeImage(Image image) {
-        images.remove(image);
-        image.setUser(null);
-    }
+//    public void addImage(Image image) {
+//        images.add(image);
+//        image.setUser(this);
+//    }
+//
+//    public void removeImage(Image image) {
+//        images.remove(image);
+//        image.setUser(null);
+//    }
 }

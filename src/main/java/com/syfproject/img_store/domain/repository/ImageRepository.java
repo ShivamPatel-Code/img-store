@@ -12,4 +12,5 @@ import java.util.Optional;
 public interface ImageRepository extends JpaRepository<Image, Long> {
     List<Image> findByUser(User user);
     Optional<Image> findByDeleteHashAndUser(String deleteHash, User user);
+    Optional<Image> findByIdAndUser(Long id, User user);
 }

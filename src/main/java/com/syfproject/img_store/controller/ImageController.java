@@ -1,6 +1,3 @@
-/**
- * Controller for handling image operations: upload, retrieval, and deletion.
- */
 package com.syfproject.img_store.controller;
 
 import com.syfproject.img_store.service.ImageService;
@@ -27,8 +24,8 @@ public class ImageController {
      * Uploads an image and associates it with the authenticated user.
      *
      * @param file the image file
-     * @param authentication the authentication object containing the user
-     * @return ResponseEntity with the upload result
+     * @param authentication the authenticated user
+     * @return ResponseEntity with upload result
      */
     @PostMapping("/upload")
     public ResponseEntity<Map> uploadImage(@RequestParam("file") MultipartFile file, Authentication authentication) {
@@ -37,10 +34,10 @@ public class ImageController {
     }
 
     /**
-     * Retrieves all images associated with the authenticated user.
+     * Retrieves all images for the authenticated user.
      *
-     * @param authentication the authentication object containing the user
-     * @return ResponseEntity with user images
+     * @param authentication the authenticated user
+     * @return ResponseEntity with user's images
      */
     @GetMapping("/all")
     public ResponseEntity<Map> getUserImages(Authentication authentication) {
@@ -49,10 +46,23 @@ public class ImageController {
     }
 
     /**
-     * Deletes an image identified by delete hash if associated with the authenticated user.
+     * Retrieves a specific image by its ID for the authenticated user.
+     *
+     * @param id the image ID
+     * @param authentication the authenticated user
+     * @return ResponseEntity with the image details
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<Map> getImageById(@PathVariable Long id, Authentication authentication) {
+        String username = authentication.getName();
+        return imageService.getImageById(id, username);
+    }
+
+    /**
+     * Deletes an image by its delete hash if associated with the authenticated user.
      *
      * @param deleteHash the delete hash for the image
-     * @param authentication the authentication object containing the user
+     * @param authentication the authenticated user
      * @return ResponseEntity with deletion result
      */
     @DeleteMapping("/delete/{deleteHash}")

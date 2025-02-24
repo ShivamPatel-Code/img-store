@@ -20,8 +20,9 @@ public class Image {
     private String imgurId;
     private String link;
     private String deleteHash;
+    private String filename;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne()
     @JoinColumn(name = "user_id")
     @JsonIgnore
     private User user;
