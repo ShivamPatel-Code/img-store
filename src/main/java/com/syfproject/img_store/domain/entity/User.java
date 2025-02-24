@@ -1,9 +1,11 @@
 package com.syfproject.img_store.domain.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.syfproject.img_store.domain.entity.Image;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.util.ArrayList;
@@ -22,12 +24,17 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotEmpty
+    @NotEmpty(message = "Username cannot be empty")
+    @Size(min = 5, message = "Username must have at least 5 characters")
     private String username;
 
-    @NotEmpty
+    @NotEmpty(message = "Password cannot be empty")
+    @Size(min = 6, message = "Password must be at least 6 characters")
+    @Pattern(regexp = "^(?=.*[A-Z])(?=.*\\d).*$", message = "Password must contain at least one uppercase letter and one number")
     private String password;
 
+    @NotEmpty(message = "Email cannot be empty")
+    @Email(message = "Invalid email address")
     private String email;
 
     @JsonIgnore

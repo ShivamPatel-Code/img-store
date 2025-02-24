@@ -4,20 +4,36 @@ on:
   pull_request:
     branches:
       - main
+
   push:
     branches:
       - main
+      - "feature/**"
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Set up JDK
+      - name: Update JWT Secret
+        run: sed -i 's/<JWT_SECRET>/${{ secrets.JWT_SECRET }}/' src/main/resources/application.properties
+
+      - name: Update Imgur Client Id
+        run: sed -i 's/<IMGUR_CLIENT_ID>/${{ secrets.IMGUR_CLIENT_ID }}/' src/main/resources/application.properties
+
+      - name: Update Imgur Secret
+        run: sed -i 's/<IMGUR_CLIENT_SECRET>/${{ secrets.IMGUR_CLIENT_SECRET }}/' src/main/resources/application.properties
+
+      - name: Update DB Username
+        run: sed -i 's/<DB_USERNAME>/${{ secrets.DB_USERNAME }}/' src/main/resources/application.properties
+
+      - name: Update DB password
+        run: sed -i 's/<DB_PASSWORD>/${{ secrets.DB_PASSWORD }}/' src/main/resources/application.properties
+
+
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
@@ -25,22 +41,8 @@ jobs:
           java-version: '17'
           cache: maven
 
-      # Step 3: Set environment variables from GitHub Secrets
-      - name: Set environment variables
-        run: |
-          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> $GITHUB_ENV
-          echo "IMGUR_CLIENT_ID=${{ secrets.IMGUR_CLIENT_ID }}" >> $GITHUB_ENV
-          echo "IMGUR_CLIENT_SECRET=${{ secrets.IMGUR_CLIENT_SECRET }}" >> $GITHUB_ENV
-          echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> $GITHUB_ENV
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
-          echo "DB_URL=${{ secrets.DB_URL }}" >> $GITHUB_ENV
-          echo "KAFKA_ENABLED=false" >> $GITHUB_ENV  # Disable Kafka in CI
-
-      # Step 4: Build the application using Maven
       - name: Build with Maven
         run: mvn clean install --batch-mode
 
-      # Step 5: Run tests
       - name: Run tests
         run: mvn test --batch-mode
-
