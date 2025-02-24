@@ -25,6 +25,11 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(controllers = ImageController.class)
+@TestPropertySource(properties = {
+        "kafka.enabled=false",
+        "jwt.secret=abcdefghijklmnopqrstuvwxyz012345",
+        "jwt.expiration=3600000"
+})
 public class ImageControllerTest {
 
     @Autowired
@@ -36,6 +41,10 @@ public class ImageControllerTest {
     @MockitoBean
     private ImageService imageService;
 
+    /**
+     * Test uploading an image successfully. Verifies that the response contains the expected message,
+     * image link, and that the original filename is saved.
+     */
     @Test
     @WithMockUser(username = "testuser")
     public void testUploadImage() throws Exception {
@@ -53,7 +62,6 @@ public class ImageControllerTest {
                         "imageLink", "http://imgur.com/fakeImage.jpg"
                 )));
 
-        // Perform the multipart POST request with a CSRF token.
         mockMvc.perform(multipart("/api/images/upload")
                         .file(file)
                         .with(csrf())
@@ -63,7 +71,9 @@ public class ImageControllerTest {
                 .andExpect(jsonPath("$.imageLink", is("http://imgur.com/fakeImage.jpg")));
     }
 
-    // Test: Invalid file type upload.
+    /**
+     * Test uploading an invalid file type. Expects a 400 Bad Request with an appropriate error message.
+     */
     @Test
     @WithMockUser(username = "testuser")
     public void testUploadInvalidFileType() throws Exception {
@@ -74,7 +84,6 @@ public class ImageControllerTest {
                 MediaType.TEXT_PLAIN_VALUE,
                 "not an image".getBytes());
 
-        // Expect the service to return a BAD_REQUEST error due to invalid file type.
         when(imageService.uploadImage(file, "testuser"))
                 .thenReturn(ResponseEntity.status(400)
                         .body(Map.of("error", "Invalid file type. Only image files (jpg, jpeg, png, apng, gif, tiff) are allowed")));
@@ -87,7 +96,10 @@ public class ImageControllerTest {
                 .andExpect(jsonPath("$.error", is("Invalid file type. Only image files (jpg, jpeg, png, apng, gif, tiff) are allowed")));
     }
 
-    // Test: File larger than 10MB.
+    /**
+     * Test uploading a file larger than the allowed limit (10MB).
+     * Expects a 400 Bad Request with an appropriate error message.
+     */
     @Test
     @WithMockUser(username = "testuser")
     public void testUploadLargeFile() throws Exception {
@@ -111,40 +123,71 @@ public class ImageControllerTest {
                 .andExpect(jsonPath("$.error", is("File size exceeds the maximum limit of 10 MB")));
     }
 
+    /**
+     * Test retrieving all images when none are associated with the user.
+     * Expects a 404 Not Found response with an appropriate message.
+     */
     @Test
     @WithMockUser(username = "testuser")
     public void testGetUserImagesEmpty() throws Exception {
-        // Configure the ImageService mock to simulate no images found.
         when(imageService.getUserImages("testuser"))
                 .thenReturn(ResponseEntity.status(404).body(Map.of("message", "No image is associated with your account")));
 
-        // Perform the GET request.
         mockMvc.perform(get("/api/images/all"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message", is("No image is associated with your account")));
     }
 
+    /**
+     * Test retrieving a specific image by its ID.
+     * Expects a successful response containing the image details including the filename.
+     */
+    @Test
+    @WithMockUser(username = "testuser")
+    public void testGetImageById() throws Exception {
+        Long imageId = 1L;
+        Map<String, Object> fakeImage = Map.of(
+                "id", imageId,
+                "imgurId", "fakeId",
+                "link", "http://imgur.com/fakeImage.jpg",
+                "filename", "test.jpg",
+                "deleteHash", "fakeDeleteHash"
+        );
+        when(imageService.getImageById(eq(imageId), eq("testuser")))
+                .thenReturn(ResponseEntity.ok(fakeImage));
+
+        mockMvc.perform(get("/api/images/{id}", imageId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(imageId.intValue())))
+                .andExpect(jsonPath("$.filename", is("test.jpg")))
+                .andExpect(jsonPath("$.link", is("http://imgur.com/fakeImage.jpg")));
+    }
+
+    /**
+     * Test deleting an image that does not exist.
+     * Expects a 404 Not Found response with an error message.
+     */
     @Test
     @WithMockUser(username = "testuser")
     public void testDeleteImageNotFound() throws Exception {
-        // Configure the ImageService mock to simulate deletion failure.
         when(imageService.deleteImage("nonexistentHash", "testuser"))
                 .thenReturn(ResponseEntity.status(404).body(Map.of("error", "Image not found or not associated with the user")));
 
-        // Perform the DELETE request with a CSRF token.
         mockMvc.perform(delete("/api/images/delete/nonexistentHash").with(csrf()))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error", is("Image not found or not associated with the user")));
     }
 
+    /**
+     * Test successful deletion of an image.
+     * Expects a successful response with a deletion message.
+     */
     @Test
     @WithMockUser(username = "testuser")
     public void testDeleteImageSuccess() throws Exception {
-        // Configure the ImageService mock to simulate successful deletion.
         when(imageService.deleteImage("fakeDeleteHash", "testuser"))
                 .thenReturn(ResponseEntity.ok(Map.of("message", "Image deleted successfully")));
 
-        // Perform the DELETE request with a CSRF token.
         mockMvc.perform(delete("/api/images/delete/fakeDeleteHash").with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message", is("Image deleted successfully")));
