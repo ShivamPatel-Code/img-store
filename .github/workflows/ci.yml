@@ -7,6 +7,7 @@ on:
   push:
     branches:
       - main
+      - "feature/**"
 
 jobs:
   build:
@@ -33,8 +34,6 @@ jobs:
           echo "IMGUR_CLIENT_SECRET=${{ secrets.IMGUR_CLIENT_SECRET }}" >> $GITHUB_ENV
           echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> $GITHUB_ENV
           echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
-          echo "DB_URL=${{ secrets.DB_URL }}" >> $GITHUB_ENV
-          echo "KAFKA_ENABLED=false" >> $GITHUB_ENV  # Disable Kafka in CI
 
       # Step 4: Build the application using Maven
       - name: Build with Maven
