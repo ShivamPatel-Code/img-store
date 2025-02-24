@@ -36,10 +36,10 @@ jobs:
           echo DB_USERNAME: "${{ secrets.DB_USERNAME }}"
           echo DB_PASSWORD: "${{ secrets.DB_PASSWORD }}"
 
-      # # Step 4: Build the application using Maven
-      # - name: Build with Maven
-      #   run: mvn clean install --batch-mode
+      # Step 4: Build the application using Maven
+      - name: Build with Maven
+        run: mvn clean install --batch-mode
 
-      # # Step 5: Run tests
-      # - name: Run tests
-      #   run: mvn test --batch-mode
+      # Step 5: Run tests
+      - name: Run tests
+        run: mvn test --batch-mode
