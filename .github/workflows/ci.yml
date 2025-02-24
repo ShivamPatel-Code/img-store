@@ -28,12 +28,13 @@ jobs:
 
       # Step 3: Set environment variables from GitHub Secrets
       - name: Set environment variables
-        env:
-          echo >> "JWT_SECRET=${{ secrets.JWT_SECRET }}"
-          echo >> "IMGUR_CLIENT_ID=${{ secrets.IMGUR_CLIENT_ID }}"
-          echo >> "IMGUR_CLIENT_SECRET=${{ secrets.IMGUR_CLIENT_SECRET }}"
-          echo >> "DB_USERNAME=${{ secrets.DB_USERNAME }}"
-          echo >> "DB_PASSWORD=${{ secrets.DB_PASSWORD }}"
+        run: |
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> $GITHUB_ENV
+          echo "IMGUR_CLIENT_ID=${{ secrets.IMGUR_CLIENT_ID }}" >> $GITHUB_ENV
+          echo "IMGUR_CLIENT_SECRET=${{ secrets.IMGUR_CLIENT_SECRET }}" >> $GITHUB_ENV
+          echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> $GITHUB_ENV
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
+        shell: bash
 
       # Step 4: Build the application using Maven
       - name: Build with Maven
