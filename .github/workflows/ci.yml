@@ -1,24 +1,29 @@
 name: CI Pipeline
 
 on:
-  pull_request:
-    branches:
-      - main
   push:
     branches:
       - main
       - "feature/**"
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    env:
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      IMGUR_CLIENT_ID: ${{ secrets.IMGUR_CLIENT_ID }}
+      IMGUR_CLIENT_SECRET: ${{ secrets.IMGUR_CLIENT_SECRET }}
+      DB_USERNAME: ${{ secrets.DB_USERNAME }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DB_URL: ${{ secrets.DB_URL }}
+      KAFKA_ENABLED: "false"
     steps:
-      # Step 1: Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Set up JDK
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
@@ -26,20 +31,18 @@ jobs:
           java-version: '17'
           cache: maven
 
-      # Step 3: Set environment variables from GitHub Secrets
-      - name: Set environment variables
-        run: |
-          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> $GITHUB_ENV
-          echo "IMGUR_CLIENT_ID=${{ secrets.IMGUR_CLIENT_ID }}" >> $GITHUB_ENV
-          echo "IMGUR_CLIENT_SECRET=${{ secrets.IMGUR_CLIENT_SECRET }}" >> $GITHUB_ENV
-          echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> $GITHUB_ENV
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
-        shell: bash
-
-      # Step 4: Build the application using Maven
+      # Build the application using Maven
       - name: Build with Maven
         run: mvn clean install --batch-mode
 
-      # Step 5: Run tests
+      # Run tests using Maven
       - name: Run tests
         run: mvn test --batch-mode
+
+      # Archive test reports if tests fail
+      - name: Archive test reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-reports
+          path: target/surefire-reports/
