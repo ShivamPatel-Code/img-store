@@ -1,5 +1,3 @@
-fix the ci pipeliene
-
 name: CI Pipeline
 
 on:
