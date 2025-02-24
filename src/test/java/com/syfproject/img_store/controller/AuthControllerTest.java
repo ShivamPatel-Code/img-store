@@ -15,10 +15,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-@SpringBootTest(properties = {"kafka.enabled=false"})
+@SpringBootTest
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AuthControllerTest {
@@ -31,9 +33,10 @@ public class AuthControllerTest {
 
     @Test
     @Order(1)
-    public void testRegisterUser() throws Exception {
-        String userJson = "{\"username\":\"testuser\",\"password\":\"testpass\",\"email\":\"testuser@example.com\"}";
+    public void testRegisterUserValid() throws Exception {
+        String userJson = "{\"username\":\"testuser\",\"password\":\"Test123423\",\"email\":\"testuser@example.com\"}";
         mockMvc.perform(post("/api/auth/register")
+                        .with(SecurityMockMvcRequestPostProcessors.csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userJson))
                 .andExpect(status().isOk())
@@ -43,33 +46,104 @@ public class AuthControllerTest {
     @Test
     @Order(2)
     public void testRegisterDuplicateUser() throws Exception {
-        String userJson = "{\"username\":\"duplicateUser\",\"password\":\"testpass\",\"email\":\"dup@example.com\"}";
-        // First registration should succeed
+        String userJson = "{\"username\":\"duplicateUser\",\"password\":\"Test123423\",\"email\":\"dup@example.com\"}";
+        // First registration should succeed.
         mockMvc.perform(post("/api/auth/register")
+                        .with(SecurityMockMvcRequestPostProcessors.csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userJson))
                 .andExpect(status().isOk());
-        // Second registration should return Bad Request
+        // Second registration should fail with 400 Bad Request.
         mockMvc.perform(post("/api/auth/register")
+                        .with(SecurityMockMvcRequestPostProcessors.csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userJson))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(containsString("Username is already taken")));
     }
 
+    // Validation tests for user registration
+
+    // Username has less than 5 characters.
     @Test
     @Order(3)
+    public void testRegisterUserInvalidUsername() throws Exception {
+        String userJson = "{\"username\":\"abc\",\"password\":\"Test1234\",\"email\":\"valid@example.com\"}";
+        mockMvc.perform(post("/api/auth/register")
+                        .with(SecurityMockMvcRequestPostProcessors.csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(userJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("Username must have at least 5 characters")));
+    }
+
+    // Password has less than 6 characters.
+    @Test
+    @Order(4)
+    public void testRegisterUserPasswordTooShort() throws Exception {
+        String userJson = "{\"username\":\"validUser\",\"password\":\"T1a\",\"email\":\"valid@example.com\"}";
+        mockMvc.perform(post("/api/auth/register")
+                        .with(SecurityMockMvcRequestPostProcessors.csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(userJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("Password must be at least 6 characters")));
+    }
+
+    // Password missing uppercase letter.
+    @Test
+    @Order(5)
+    public void testRegisterUserPasswordNoUppercase() throws Exception {
+        String userJson = "{\"username\":\"validUser\",\"password\":\"password1\",\"email\":\"valid@example.com\"}";
+        mockMvc.perform(post("/api/auth/register")
+                        .with(SecurityMockMvcRequestPostProcessors.csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(userJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("Password must contain at least one uppercase letter")));
+    }
+
+    // Password missing digit.
+    @Test
+    @Order(6)
+    public void testRegisterUserPasswordNoDigit() throws Exception {
+        String userJson = "{\"username\":\"validUser\",\"password\":\"Password\",\"email\":\"valid@example.com\"}";
+        mockMvc.perform(post("/api/auth/register")
+                        .with(SecurityMockMvcRequestPostProcessors.csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(userJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("Password must contain at least one uppercase letter and one number")));
+    }
+
+    // Invalid email address.
+    @Test
+    @Order(7)
+    public void testRegisterUserInvalidEmail() throws Exception {
+        String userJson = "{\"username\":\"validUser\",\"password\":\"Password1\",\"email\":\"invalid-email\"}";
+        mockMvc.perform(post("/api/auth/register")
+                        .with(SecurityMockMvcRequestPostProcessors.csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(userJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("Invalid email address")));
+    }
+
+    @Test
+    @Order(8)
     public void testLoginUser() throws Exception {
         // Register user
-        String userJson = "{\"username\":\"loginUser\",\"password\":\"testpass\",\"email\":\"login@example.com\"}";
+        String userJson = "{\"username\":\"loginUser\",\"password\":\"Test1234\",\"email\":\"login@example.com\"}";
         mockMvc.perform(post("/api/auth/register")
+                        .with(SecurityMockMvcRequestPostProcessors.csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userJson))
                 .andExpect(status().isOk());
 
         // Login with correct credentials
-        String loginJson = "{\"username\":\"loginUser\",\"password\":\"testpass\"}";
+        String loginJson = "{\"username\":\"loginUser\",\"password\":\"Test1234\"}";
         MvcResult result = mockMvc.perform(post("/api/auth/login")
+                        .with(SecurityMockMvcRequestPostProcessors.csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(loginJson))
                 .andExpect(status().isOk())
@@ -82,10 +156,11 @@ public class AuthControllerTest {
     }
 
     @Test
-    @Order(4)
+    @Order(9)
     public void testLoginWithWrongCredentials() throws Exception {
         String loginJson = "{\"username\":\"nonexistent\",\"password\":\"wrongpass\"}";
         mockMvc.perform(post("/api/auth/login")
+                        .with(SecurityMockMvcRequestPostProcessors.csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(loginJson))
                 .andExpect(status().isUnauthorized())

@@ -4,6 +4,7 @@ import com.syfproject.img_store.domain.entity.User;
 import com.syfproject.img_store.domain.repository.UserRepository;
 import com.syfproject.img_store.dto.LoginRequest;
 import com.syfproject.img_store.security.JwtTokenProvider;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -38,9 +39,8 @@ public class AuthController {
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
-    // Public registration endpoint – no authentication required.
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody User user) {
+    public ResponseEntity<?> registerUser(@Valid @RequestBody User user) {
         try {
             if (userRepository.findByUsername(user.getUsername()).isPresent()){
                 return ResponseEntity.badRequest().body("Username is already taken");
@@ -48,13 +48,13 @@ public class AuthController {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             userRepository.save(user);
             return ResponseEntity.ok("User registered successfully");
-        } catch(Exception e) {
+        } catch(Exception e){
             log.error("Unexpected error occurred registering a user", e);
             return ResponseEntity.internalServerError().body("Internal server error occurred registering a user");
         }
     }
 
-    // Public login endpoint – returns a JWT token.
+    // returns a JWT token.
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         try {
