@@ -61,9 +61,10 @@ public class ImageService {
         imageRepository.save(image);
 
         // Publish event to Kafka with username and image link.
-        String eventMessage = String.format("{\"username\":\"%s\", \"imageLink\":\"%s\"}", username, imageLink);
-        kafkaTemplate.send("image-uploads", eventMessage);
-
+        if (kafkaTemplate != null) {
+            String eventMessage = String.format("{\"username\":\"%s\", \"imageLink\":\"%s\"}", username, imageLink);
+            kafkaTemplate.send("image-uploads", eventMessage);
+        }
         return ResponseEntity.ok(Map.of("message", "Image uploaded successfully", "imageLink", imageLink));
     }
 

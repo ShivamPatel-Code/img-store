@@ -28,7 +28,7 @@ public class ImageController {
     }
 
     // Endpoint to get all images of the authenticated user.
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<Map> getUserImages(Authentication authentication) {
         String username = authentication.getName();
         return imageService.getUserImages(username);
@@ -36,7 +36,7 @@ public class ImageController {
     }
 
     // Delete endpoint – expects a deleteHash. Checks if that image is associated with the user.
-    @DeleteMapping("/{deleteHash}")
+    @DeleteMapping("/delete/{deleteHash}")
     public ResponseEntity<Map> deleteImage(@PathVariable String deleteHash, Authentication authentication) {
         String username = authentication.getName();
         return imageService.deleteImage(deleteHash, username);
