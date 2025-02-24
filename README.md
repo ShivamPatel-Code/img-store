@@ -4,6 +4,8 @@ The **Image Store Application** is a Spring Boot REST service that enables users
 
 Additionally, the application optionally integrates with Kafka for asynchronous messaging. When enabled, Kafka publishes an event whenever an image is uploaded.
 
+Test APIs here - https://documenter.getpostman.com/view/19211140/2sAYdeKrGD
+
 ## Table of Contents
 
 - [Features](#features)
