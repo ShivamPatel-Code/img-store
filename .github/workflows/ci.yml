@@ -18,22 +18,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Update JWT Secret
-        run: sed -i 's/<JWT_SECRET>/${{ secrets.JWT_SECRET }}/' src/main/resources/application.properties
-
-      - name: Update Imgur Client Id
-        run: sed -i 's/<IMGUR_CLIENT_ID>/${{ secrets.IMGUR_CLIENT_ID }}/' src/main/resources/application.properties
-
-      - name: Update Imgur Secret
-        run: sed -i 's/<IMGUR_CLIENT_SECRET>/${{ secrets.IMGUR_CLIENT_SECRET }}/' src/main/resources/application.properties
-
-      - name: Update DB Username
-        run: sed -i 's/<DB_USERNAME>/${{ secrets.DB_USERNAME }}/' src/main/resources/application.properties
-
-      - name: Update DB password
-        run: sed -i 's/<DB_PASSWORD>/${{ secrets.DB_PASSWORD }}/' src/main/resources/application.properties
-
-
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
